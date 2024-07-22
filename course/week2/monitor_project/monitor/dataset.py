@@ -1,3 +1,4 @@
+from typing import Iterable
 import torch
 import numpy as np
 import pandas as pd
@@ -6,6 +7,21 @@ from torch.utils.data import Dataset
 from collections import defaultdict
 
 from .paths import DATA_DIR
+
+
+def fill_vocab(reviews: Iterable[str], vocab: defaultdict) -> None:
+  """
+  Fill a vocabulary with tokens from a dataset of reviews.
+  
+  Tokens are lowercased.
+
+  Args:
+    reviews (Iterable[str]): reviews to process
+    vocab (defaultdict): vocabulary to fill
+  """
+  for review in reviews:
+    for token in review.split():
+      vocab[token.lower()] += 1
 
 
 class ProductReviewEmbeddings(Dataset):
@@ -51,7 +67,7 @@ class ProductReviewEmbeddings(Dataset):
     # Notes:
     # --
     # Convert tokens to lowercase when updating vocab.
-    pass  # remove me
+    fill_vocab(self.data.review, vocab)
     # ===============================
     return dict(vocab)
 
@@ -111,7 +127,7 @@ class ProductReviewStream(Dataset):
     # Type:
     # --
     # vocab: dict[str, int]
-    pass  # remove me
+    fill_vocab(self.data.review, vocab)
     # ===============================
     return dict(vocab)
 

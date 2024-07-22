@@ -28,6 +28,9 @@ def main(args):
   # and predicted probabilities.
   monitor = MonitoringSystem(tr_vocab, tr_probs, tr_labels)
 
+  ks_scores = []
+  hist_scores = []
+  outlier_scores = []
   for index in range(1, 9):
     te_ds = ProductReviewStream(index)
     te_dl = DataLoader(te_ds, batch_size=128, shuffle=False, num_workers=4)
@@ -54,6 +57,18 @@ def main(args):
       print(f'Histogram intersection: {results["hist_score"]:.3f}')
       print(f'OOD Vocab %: {results["outlier_score"]*100:.2f}')
       print('')  # new line
+
+      # Save scores
+      ks_scores.append(results['ks_score'])
+      hist_scores.append(results['hist_score'])
+      outlier_scores.append(results['outlier_score'])
+    
+  print('\n==========================')
+  print('FINAL RESULTS')
+  print('==========================')
+  print(f'KS test p-values: {[round(x, 3) for x in ks_scores]}')
+  print(f'Histogram intersection: {[round(x, 3) for x in hist_scores]}')
+  print(f'OOD Vocab proportion: {[round(x, 3) for x in outlier_scores]}')
 
 
 def get_probs(system, loader):

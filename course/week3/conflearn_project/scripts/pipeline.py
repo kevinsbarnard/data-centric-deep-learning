@@ -163,6 +163,36 @@ class TrainIdentifyReview(FlowSpec):
       # probs_: np.array[float] (shape: |test set|)
       # TODO
       # ===============================================
+      
+      # Get train and test slices of X and y. Convert to torch tensors.
+      X_train = torch.Tensor(X[train_index])
+      y_train = torch.Tensor(y[train_index])
+      X_test = torch.Tensor(X[test_index])
+      y_test = torch.Tensor(y[test_index])
+
+      # Create train/test datasets using tensors.
+      train_dataset = TensorDataset(X_train, y_train)
+      test_dataset = TensorDataset(X_test, y_test)
+
+      # Create train/test data loaders from datasets.
+      train_loader = DataLoader(train_dataset, batch_size=self.config.train.optimizer.batch_size)
+      test_loader = DataLoader(test_dataset, batch_size=self.config.train.optimizer.batch_size)
+
+      # Create `SentimentClassifierSystem`.
+      system = SentimentClassifierSystem(self.config)
+
+      # Create `Trainer` and call `fit`.
+      trainer = Trainer(max_epochs=self.config.train.optimizer.max_epochs)
+      trainer.fit(system, train_loader)
+
+      # Call `predict` on `Trainer` and the test data loader.
+      probs_ = trainer.predict(system, test_loader)
+
+      # Convert probabilities back to numpy (make sure 1D).
+      # TODO
+      
+      print(probs_)
+
       assert probs_ is not None, "`probs_` is not defined."
       probs[test_index] = probs_
 

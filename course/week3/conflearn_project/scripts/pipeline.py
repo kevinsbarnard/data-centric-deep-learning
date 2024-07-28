@@ -189,9 +189,7 @@ class TrainIdentifyReview(FlowSpec):
       probs_ = trainer.predict(system, test_loader)
 
       # Convert probabilities back to numpy (make sure 1D).
-      # TODO
-      
-      print(probs_)
+      probs_ = np.concatenate([p.numpy() for p in probs_]).flatten()
 
       assert probs_ is not None, "`probs_` is not defined."
       probs[test_index] = probs_
@@ -238,6 +236,7 @@ class TrainIdentifyReview(FlowSpec):
     # ranked_label_issues: List[int]
     # TODO
     # =============================
+    ranked_label_issues = find_label_issues(self.all_df.label, prob, return_indices_ranked_by="self_confidence")
     assert ranked_label_issues is not None, "`ranked_label_issues` not defined."
 
     # save this to class
@@ -335,6 +334,9 @@ class TrainIdentifyReview(FlowSpec):
     # dm.test_dataset.data = test slice of self.all_df
     # TODO
     # # ====================================
+    dm.train_dataset.data = self.all_df[:train_size]
+    dm.dev_dataset.data = self.all_df[train_size:train_size + dev_size]
+    dm.test_dataset.data = self.all_df[train_size + dev_size:]
 
     # start from scratch
     system = SentimentClassifierSystem(self.config)

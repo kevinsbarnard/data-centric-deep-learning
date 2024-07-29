@@ -21,9 +21,12 @@ def random_sampling(pred_probs: torch.Tensor, budget : int = 1000) -> List[int]:
   # HINT: when you randomly sample, do not choose duplicates.
   # HINT: please ensure indices is a list of integers
   # ================================
-  all_indices = np.arange(len(pred_probs))
-  indices = np.random.choice(all_indices, budget, replace=False)
-  indices = np.sort(indices)
+  indices = np.random.choice(
+    np.arange(len(pred_probs)), 
+    budget, 
+    replace=False
+  )
+  indices.sort()
   indices = indices.tolist()
   return indices
 
@@ -50,11 +53,10 @@ def uncertainty_sampling(pred_probs: torch.Tensor, budget : int = 1000) -> List[
   # predicted probability and the chance probability for the entire vector. We can sort the examples by this distance
   # and take the 1000 examples with the smallest distances.
   distances = np.sum(np.abs(pred_probs.numpy() - chance_prob), axis=1)
-  indices = np.argsort(distances)
-
-  indices = indices[:budget]
-  indices = np.sort(indices)
+  indices = np.argsort(distances)[:budget]
+  indices.sort()
   indices = indices.tolist()
+
   return indices
 
 def margin_sampling(pred_probs: torch.Tensor, budget : int = 1000) -> List[int]:
@@ -71,8 +73,7 @@ def margin_sampling(pred_probs: torch.Tensor, budget : int = 1000) -> List[int]:
   # ================================
   probs_sorted = np.sort(pred_probs.numpy(), axis=1)
   top_two_abs_diff = np.abs(probs_sorted[:, -1] - probs_sorted[:, -2])
-  indices = np.argsort(top_two_abs_diff)
-  indices = indices[:budget].tolist()
+  indices = np.argsort(top_two_abs_diff)[:budget].tolist()
   
   return indices
 
@@ -92,4 +93,10 @@ def entropy_sampling(pred_probs: torch.Tensor, budget : int = 1000) -> List[int]
   # Take the first 1000.
   # HINT: Add epsilon when taking a log for entropy computation
   # ================================
+  # Math definition: -sum_i (p_i * log(p_i))
+  # Add epsilon to prevent log(0) errors
+  probs = pred_probs.numpy()
+  entropy = -np.sum(probs * np.log(probs + epsilon))
+  indices = np.argsort(-entropy)[:budget].tolist()
+
   return indices

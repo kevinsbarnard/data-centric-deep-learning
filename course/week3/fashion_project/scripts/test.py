@@ -52,7 +52,7 @@ class TestFlow(FlowSpec):
     # Load trained system
     system = FashionClassifierSystem.load_from_checkpoint(self.checkpoint_path)
 
-    if self.test == "offline":
+    if self.test_type == "offline":
       dm = FashionDataModule()
       trainer.test(system, dm, ckpt_path = self.checkpoint_path)
       results = system.test_results
